@@ -10,7 +10,12 @@ Run server:
 
 ```bash
 $ brew services start postgresql@14
-// $ pg_ctl -D /opt/homebrew/var/postgres start
+```
+
+for background run:
+
+```bash
+$ pg_ctl -D /opt/homebrew/var/postgres start
 ```
 
 Note: if you’re on Intel, the `/opt/homebrew` probably is `/usr/local`.

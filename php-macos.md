@@ -66,6 +66,20 @@ brew unlink php@7.2
 brew link php@8.1 --force
 ```
 
+### Check which php version open on service
+
+```bash
+$ brew services list
+```
+
+In more modern versions, simply doing
+
+```bash
+    brew services stop php@7.2
+    brew services start php@8.1
+    brew services restart php@8.1
+```
+
 You can combine brew unlink and brew link to swap between any installed version.
 
 ###Open Source Alternatives

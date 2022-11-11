@@ -70,6 +70,118 @@ Nginx HTTP                 ALLOW       Anywhere
 Nginx HTTP (v6)            ALLOW       Anywhere (v6)
 ```
 
+##### Using IPv6 with UFW (Optional)
+
+This tutorial is written with IPv4 in mind, but will work for IPv6 as well as long as you enable it. If your Ubuntu server has IPv6 enabled, ensure that UFW is configured to support IPv6 so that it will manage firewall rules for IPv6 in addition to IPv4. To do this, open the UFW configuration with nano or your favorite editor.
+
+```bash
+sudo nano /etc/default/ufw
+```
+
+Then make sure the value of IPV6 is yes. It should look like this:
+
+```bash
+/etc/default/ufw excerpt
+IPV6=yes
+```
+
+Save and close the file. Now, when UFW is enabled, it will be configured to write both IPv4 and IPv6 firewall rules. However, before enabling UFW, we will want to ensure that your firewall is configured to allow you to connect via SSH. Let’s start with setting the default policies.
+
+#### Setting Up Default Policies
+
+If you’re just getting started with your firewall, the first rules to define are your default policies. These rules control how to handle traffic that does not explicitly match any other rules. By default, UFW is set to deny all incoming connections and allow all outgoing connections. This means anyone trying to reach your server would not be able to connect, while any application within the server would be able to reach the outside world.
+
+Let’s set your UFW rules back to the defaults so we can be sure that you’ll be able to follow along with this tutorial. To set the defaults used by UFW, use these commands:
+
+```bash
+$ sudo ufw default deny incoming
+$ sudo ufw default allow outgoing
+```
+
+You will receive output like the following:
+
+```bash
+Output
+Default incoming policy changed to 'deny'
+(be sure to update your rules accordingly)
+Default outgoing policy changed to 'allow'
+(be sure to update your rules accordingly)
+```
+
+#### Allowing SSH Connections
+
+If we enabled our UFW firewall now, it would deny all incoming connections. This means that we will need to create rules that explicitly allow legitimate incoming connections — SSH or HTTP connections, for example — if we want our server to respond to those types of requests. If you’re using a cloud server, you will probably want to allow incoming SSH connections so you can connect to and manage your server.
+
+To configure your server to allow incoming SSH connections, you can use this command:
+
+```bash
+$ sudo ufw allow ssh
+```
+
+This will create firewall rules that will allow all connections on port 22, which is the port that the SSH daemon listens on by default. UFW knows what port allow ssh means because it’s listed as a service in the /etc/services file.
+
+However, we can actually write the equivalent rule by specifying the port instead of the service name. For example, this command works the same as the one above:
+
+```bash
+$ sudo ufw allow 22
+```
+
+If you configured your SSH daemon to use a different port, you will have to specify the appropriate port. For example, if your SSH server is listening on port 2222, you can use this command to allow connections on that port:
+
+```bash
+$ sudo ufw allow 2222
+```
+
+Now that your firewall is configured to allow incoming SSH connections, we can enable it.
+
+#### Enabling UFW
+
+To enable UFW, use this command:
+
+```bash
+$ sudo ufw enable
+```
+
+You will receive a warning that says the command may disrupt existing SSH connections. You already set up a firewall rule that allows SSH connections, so it should be fine to continue. Respond to the prompt with y and hit ENTER.
+
+The firewall is now active. Run the sudo ufw status verbose command to see the rules that are set. The rest of this tutorial covers how to use UFW in more detail, like allowing or denying different kinds of connections.
+
+#### Allowing Other Connections
+
+At this point, you should allow all of the other connections that your server needs to respond to. The connections that you should allow depends on your specific needs. Luckily, you already know how to write rules that allow connections based on a service name or port; we already did this for SSH on port 22. You can also do this for:
+
+HTTP on port 80, which is what unencrypted web servers use, using `sudo ufw allow http` or ` sudo ufw allow 80`
+HTTPS on port 443, which is what encrypted web servers use, using `sudo ufw allow https` or ` sudo ufw allow 443`
+
+There are several others ways to allow other connections, aside from specifying a port or known service.
+
+#### Specific Port Ranges
+
+You can specify port ranges with UFW. Some applications use multiple ports, instead of a single port.
+
+For example, to allow X11 connections, which use ports `6000-6007`, use these commands:
+
+```bash
+$ sudo ufw allow 6000:6007/tcp
+$ sudo ufw allow 6000:6007/udp
+```
+
+When specifying port ranges with UFW, you must specify the protocol (tcp or udp) that the rules should apply to. We haven’t mentioned this before because not specifying the protocol automatically allows both protocols, which is OK in most cases.
+
+#### Specific IP Addresses
+
+When working with UFW, you can also specify IP addresses. For example, if you want to allow connections from a specific IP address, such as a work or home IP address of 203.0.113.4, you need to specify from, then the IP address:
+
+```bash
+$ sudo ufw allow from 203.0.113.4
+```
+
+You can also specify a specific port that the IP address is allowed to connect to by adding to any port followed by the port number. For example, If you want to allow 203.0.113.4 to connect to port 22 (SSH), use this command:
+
+```bash
+$ sudo ufw allow from 203.0.113.4 to any port 22
+```
+
 #### Step 3 – Checking your Web Server
 
 We can check with the systemd init system to make sure the service is running by typing:

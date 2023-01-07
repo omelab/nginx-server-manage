@@ -531,3 +531,5 @@ Once you reload Nginx’s configuration with sudo systemctl reload nginx, your p
 ## Help
 
 - [Secure install phpmyadmin](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-phpmyadmin-with-nginx-on-an-ubuntu-20-04-server)
+
+- [install phpmyadmin](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-phpmyadmin-with-nginx-on-ubuntu-16-04)

@@ -400,7 +400,15 @@ sudo mysql_secure_installation
 
 When promoted for the password enter the SetRootPasswordHere (or whatever you set when you ran the above SQL query)
 
-###
+Note: After configuring your root MySQL user to authenticate with a password, you’ll no longer be able to access MySQL with the sudo mysql command used previously. Instead, you must run the following:
+
+```bash
+$ mysql -u root -p
+```
+
+At this point, your database system is now set up and you can move on to installing PHP.
+
+### Step 3 – Installing PHP and Configuring Nginx to Use the PHP Processor
 
 ## Help resources
 

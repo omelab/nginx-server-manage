@@ -1,4 +1,5 @@
-#Implementation of Mac M1 Nginx Configuration Multisite
+## Implementation of Mac M1 Nginx Configuration Multisite
+
 Description: nginx installed through brew
 
 Website Root:/opt/homebrew/var/www
@@ -7,7 +8,7 @@ nginx configuration directory:/opt/homebrew/etc/nginx/
 
 Assumption: There is a project name TestProject and a domain name bd. testproject. com
 
-###Step 1: Set IP to domain name mapping (that is, add hosts)
+### Step 1: Set IP to domain name mapping (that is, add hosts)
 
 ```bash
 #  Terminal
@@ -17,14 +18,15 @@ vim /etc/hosts
 127.0.0.1  bd.testproject.com
 ```
 
-###Step 2: Create a new site profile directory
+### Step 2: Create a new site profile directory
 
 ```bash
 #  Terminal
 mkdir /opt/homebrew/etc/nginx/vhosts
 ```
 
-###Step 3: Create a new site profile
+### Step 3: Create a new site profile
+
 Create a new configuration file named bd. testproject. com_80.conf in the /opt/homebrew/etc/nginx/vhosts directory with the following configuration file contents (you can change the configuration contents as needed):
 
 ```bash
@@ -49,7 +51,7 @@ server {
 }
 ```
 
-###Step 4: Introduce site configuration in the nginx default configuration file
+### Step 4: Introduce site configuration in the nginx default configuration file
 
 ```bash
 #  Terminal
@@ -60,7 +62,7 @@ server_names_hash_bucket_size 64; #  Modify the server name length , Only for  3
 include /opt/homebrew/etc/nginx/vhosts/*; #  Introducing site configuration
 ```
 
-###Step 5: Restart nginx
+### Step 5: Restart nginx
 
 ```bash
 #  Terminal

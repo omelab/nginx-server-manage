@@ -23,6 +23,8 @@ nest generate module books
 nest generate controller books
 
 nest generate service books
+
+nest generate entity books
 ```
  
  

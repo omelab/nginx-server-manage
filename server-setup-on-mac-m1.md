@@ -27,7 +27,7 @@ mkdir /opt/homebrew/etc/nginx/vhosts
 
 ### Step 3: Create a new site profile
 
-Create a new configuration file named bd. testproject. com_80.conf in the /opt/homebrew/etc/nginx/vhosts directory with the following configuration file contents (you can change the configuration contents as needed):
+Create a new configuration file named bd.testproject.com_80.conf in the /opt/homebrew/etc/nginx/vhosts directory with the following configuration file contents (you can change the configuration contents as needed):
 
 ```bash
 server {
@@ -74,3 +74,8 @@ Ignore me and start fastcgi
 ```bash
 /usr/local/php/bin/php-cgi -b 9000
 ```
+
+
+
+### help
+[help](https://gist.github.com/jjsquady/5399d6e1b23f501083a9c262d806e248)

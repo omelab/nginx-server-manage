@@ -27,4 +27,9 @@ nest generate service books
 nest generate entity books
 ```
  
- 
+## pm2 start project with namespace
+```bash 
+ pm2 start yarn --interpreter bash --name api -- start
+
+ pm2 start "yarn dev" --name api
+```

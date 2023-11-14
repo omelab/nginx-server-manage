@@ -134,7 +134,9 @@ BEGIN
 END;
 //
 DELIMITER ;
+```
 
+```sql
 
 -- updated query --
 DELIMITER //
@@ -194,4 +196,117 @@ BEGIN
 END;
 //
 DELIMITER ;
+```
+
+
+
+
+## WRITE TIGGER FOR STOCK OUT AND UPDATE REMAINING QUANTITY BY TEMP TABLE
+```sql
+DELIMITER //
+
+CREATE TRIGGER after_insert_stock_out
+AFTER INSERT ON stock_out FOR EACH ROW
+
+BEGIN 
+
+    -- Initialize variables
+    SET @dispatch_qty = NEW.stock_out_qty;
+
+    -- Drop the temporary table if it exists
+    DROP TEMPORARY TABLE IF EXISTS temp_stock_in;
+
+    -- Create a temporary table to store stock_in entries for the specified product_id
+    CREATE TEMPORARY TABLE temp_stock_in AS
+        SELECT id, product_id, stock_in_qty, stock_out_qty, remaining_qty, purchase_price, stock_in_date
+        FROM stock_in
+        WHERE product_id = NEW.product_id
+        AND remaining_qty > 0
+        ORDER BY id ASC;
+
+
+    -- Loop through the temporary table and update stock_out_qty in stock_in table
+    SET @done = FALSE;
+
+    WHILE @dispatch_qty > 0 AND (SELECT COUNT(*) FROM temp_stock_in) > 0 DO
+        -- Get the first row from the temporary table
+        SELECT id, remaining_qty INTO @current_id, @current_remaining_qty FROM temp_stock_in LIMIT 1;
+
+
+        -- Update stock_out_qty and calculate remaining_qty
+        IF @current_remaining_qty <= @dispatch_qty THEN
+            -- Update stock_out_qty and deduct from dispatch_qty
+            UPDATE stock_in
+            SET stock_out_qty = stock_out_qty + @current_remaining_qty,
+                remaining_qty = remaining_qty - @current_remaining_qty
+            WHERE id = @current_id;
+
+            SET @dispatch_qty = @dispatch_qty - @current_remaining_qty;
+
+        ELSEIF @current_remaining_qty >= @dispatch_qty THEN
+            -- Update stock_out_qty and remaining_qty, and set dispatch_qty to 0 (done)
+            UPDATE stock_in
+            SET stock_out_qty = stock_out_qty + @dispatch_qty,
+                remaining_qty = remaining_qty - @dispatch_qty
+            WHERE id = @current_id;
+
+            SET @dispatch_qty = 0;
+            SET @done = TRUE;
+        END IF;
+
+        -- Delete the processed row from the temporary table
+        DELETE FROM temp_stock_in WHERE id = @current_id;
+
+    END WHILE;
+
+  -- Drop the temporary table
+    DROP TEMPORARY TABLE IF EXISTS temp_stock_in;
+END;
+//
+DELIMITER ;
+```
+
+## UPDATE REMAINING QUANTITY WITHOUT TEMP TABLE
+```sql
+CREATE TRIGGER update_stock_out
+BEFORE INSERT ON stock_out
+FOR EACH ROW
+BEGIN 
+    -- Initialize variables
+    SET @dispatch_qty = NEW.stock_out_qty;
+
+    -- Loop through stock_in entries for the specified product_id
+    SET @done = FALSE;
+
+    WHILE @dispatch_qty > 0 AND NOT @done DO
+        -- Get the next row that meets the conditions
+        SELECT id, remaining_qty
+        INTO @current_id, @current_remaining_qty
+        FROM stock_in
+        WHERE product_id = NEW.product_id
+          AND remaining_qty > 0
+        ORDER BY id ASC
+        LIMIT 1;
+
+        -- Update stock_out_qty and calculate remaining_qty
+        IF @current_remaining_qty <= @dispatch_qty THEN
+            -- Update stock_out_qty and deduct from dispatch_qty
+            UPDATE stock_in
+            SET stock_out_qty = stock_out_qty + @current_remaining_qty,
+                remaining_qty = remaining_qty - @current_remaining_qty
+            WHERE id = @current_id;
+
+            SET @dispatch_qty = @dispatch_qty - @current_remaining_qty;
+        ELSE
+            -- Update stock_out_qty and set dispatch_qty to 0 (done)
+            UPDATE stock_in
+            SET stock_out_qty = stock_out_qty + @dispatch_qty,
+                remaining_qty = remaining_qty - @dispatch_qty
+            WHERE id = @current_id;
+
+            SET @dispatch_qty = 0;
+            SET @done = TRUE;
+        END IF;
+    END WHILE;
+END;
 ```

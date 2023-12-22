@@ -1,3 +1,7 @@
 - https://readme.so
 - https://opensource.org/licenses/
 - https://www.cyberciti.biz/faq/ubuntu-copy-file-command/
+
+
+git push --set-upstream origin develop
+git rm -r --cached .

@@ -310,3 +310,56 @@ BEGIN
     END WHILE;
 END;
 ```
+
+##Update Inventories Item in Stock
+
+```sql
+CREATE TRIGGER update_inventories_item_in_stock
+AFTER INSERT ON stock_records
+FOR EACH ROW
+BEGIN 
+    -- Check if a record exists in inventories for the same product_id and warehouse_id
+  DECLARE existingRecord INT;
+
+  SELECT 1 INTO existingRecord
+  FROM inventories
+  WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id
+  LIMIT 1;
+
+  -- Update existing inventories record if it exists
+  IF existingRecord = 1 THEN
+    UPDATE inventories
+    SET item_in_stock = (
+      SELECT COALESCE(SUM(stock_in), 0) - COALESCE(SUM(stock_out), 0)
+      FROM stock_records
+      WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id
+    ), updated_at = NOW()
+    WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id;
+
+  -- If no record exists, insert a new record
+  ELSE 
+    INSERT INTO inventories (product_id, warehouse_id, item_in_stock, created_at)
+    SELECT NEW.product_id, NEW.warehouse_id, COALESCE(SUM(stock_in), 0) - COALESCE(SUM(stock_out), 0), NOW()
+    FROM stock_records
+    WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id
+    ON DUPLICATE KEY UPDATE
+      item_in_stock = VALUES(item_in_stock);
+  END IF;
+END
+```
+
+## UPDATE TRACKABLE ITEM STATUS 
+```sql
+CREATE TRIGGER update_trackable_items_status
+AFTER INSERT ON stock_records
+FOR EACH ROW
+
+BEGIN
+  -- Update the trackable_items table when is_trackable = 1 
+  IF NEW.is_trackable = 1 THEN
+    UPDATE trackable_items
+    SET stock_in_date = NEW.stock_in_date, status = 'Stock'
+    WHERE purchase_item_id = NEW.purchase_item_id;
+  END IF;
+END
+```

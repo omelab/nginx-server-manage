@@ -363,3 +363,238 @@ BEGIN
   END IF;
 END
 ```
+
+## INSERT STOCK RECORD WHEN INSERT STOCK IN RECORD
+```sql
+BEGIN
+    -- Check if a record exists in inventories for the same product_id and warehouse_id
+  DECLARE existingRecord INT;
+  DECLARE openingQty DECIMAL;
+  DECLARE openingPrice DECIMAL;
+
+  SELECT 
+    COUNT(*),
+    COALESCE(item_in_stock, 0),
+    COALESCE(price_in_stock, 0)
+  INTO existingRecord, openingQty, openingPrice
+  FROM inventories
+  WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id
+  LIMIT 1;
+
+  -- Update existing inventories record if it exists
+  IF existingRecord = 1 THEN
+    UPDATE inventories
+    SET item_in_stock = (
+      SELECT COALESCE(SUM(remaining_qty), 0)
+      FROM stock_in_records
+      WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id AND remaining_qty > 0
+  ),
+  price_in_stock = (
+      SELECT COALESCE(SUM(remaining_qty * unit_price), 0)
+      FROM stock_in_records
+      WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id AND remaining_qty > 0
+  ),
+    updated_at = NOW()
+    WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id;
+
+  -- If no record exists, insert a new record
+  ELSE 
+    INSERT INTO inventories (product_id, warehouse_id, item_in_stock, price_in_stock, created_at)
+    SELECT NEW.product_id, NEW.warehouse_id, COALESCE(SUM(remaining_qty), 0),COALESCE(SUM(remaining_qty * unit_price), 0), NOW()
+    FROM stock_in_records
+    WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id AND remaining_qty > 0
+    ON DUPLICATE KEY UPDATE
+      item_in_stock = VALUES(item_in_stock);
+  END IF;
+  
+
+  -- Insert stock_records for stock in item
+  INSERT INTO stock_records(
+    stock_in_id,
+    product_id,
+    warehouse_id,
+    is_trackable,
+    opening_qty,
+    value_of_opening_stock,
+    stock_in,
+    stock_in_unit_price,
+    closing_qty,
+    value_of_closing_stock,
+    unit,
+    currency,
+    stock_received_by,
+    type,
+    created_at
+  )
+  VALUES (
+      NEW.id,
+      NEW.product_id,
+      NEW.warehouse_id,
+      NEW.is_trackable,
+      openingQty,
+      openingPrice,
+      NEW.stock_in_qty,
+      NEW.unit_price,
+      openingQty + NEW.stock_in_qty,
+      openingPrice + (NEW.stock_in_qty * NEW.unit_price),
+      NEW.unit,
+      NEW.currency,
+      NEW.stock_received_by,
+      'Stock In', -- 'Stock In','Stock Out','Returned','Ordered','Sold','Damaged','Used','Gift','Marketing'
+      NEW.created_at
+  );
+  
+END
+```
+
+## UPDATE STOCK RECORD WHEN UPATE INSERT ITEM VALUE
+```sql
+BEGIN
+    -- Check if a record exists in inventories for the same product_id and warehouse_id
+  DECLARE existingRecord INT;
+  DECLARE openingQty DECIMAL;
+  DECLARE openingPrice DECIMAL;
+
+  SELECT 
+    COUNT(*),
+    COALESCE(item_in_stock, 0),
+    COALESCE(price_in_stock, 0)
+  INTO existingRecord, openingQty, openingPrice
+  FROM inventories
+  WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id
+  LIMIT 1;
+
+  -- Update existing inventories record if it exists
+  IF existingRecord = 1 THEN
+    UPDATE inventories
+    SET item_in_stock = (
+      SELECT COALESCE(SUM(remaining_qty), 0)
+      FROM stock_in_records
+      WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id AND remaining_qty > 0
+  ),
+  price_in_stock = (
+      SELECT COALESCE(SUM(remaining_qty * unit_price), 0)
+      FROM stock_in_records
+      WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id AND remaining_qty > 0
+  ),
+    updated_at = NOW()
+    WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id;
+
+  -- If no record exists, insert a new record
+  ELSE 
+    INSERT INTO inventories (product_id, warehouse_id, item_in_stock, price_in_stock, created_at)
+    SELECT NEW.product_id, NEW.warehouse_id, COALESCE(SUM(remaining_qty), 0),COALESCE(SUM(remaining_qty * unit_price), 0), NOW()
+    FROM stock_in_records
+    WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id AND remaining_qty > 0
+    ON DUPLICATE KEY UPDATE
+      item_in_stock = VALUES(item_in_stock);
+  END IF;
+
+-- update stock_records for stock in item
+UPDATE stock_records 
+SET 
+  is_trackable = NEW.is_trackable,
+  opening_qty = openingQty - OLD.stock_in_qty,
+  value_of_opening_stock = openingPrice - (OLD.stock_in_qty * OLD.unit_price),
+  stock_in = NEW.stock_in_qty,
+  stock_in_unit_price = NEW.unit_price,
+  closing_qty = openingQty - OLD.stock_in_qty + NEW.stock_in_qty,
+  value_of_closing_stock =  openingPrice - (OLD.stock_in_qty * OLD.unit_price) + (NEW.stock_in_qty * NEW.unit_price)
+WHERE 
+  stock_in_id = NEW.id;
+ 
+END
+```
+
+## INSERT STOCK RECORD WHEN MADE STOCK OUT OR DAMAGE OR USED OR GIFT
+```sql
+BEGIN
+
+  DECLARE openingQty DECIMAL;
+  DECLARE openingStockValue DECIMAL;
+
+  SELECT 
+    COALESCE(item_in_stock, 0),
+    COALESCE(price_in_stock, 0)
+  INTO  openingQty, openingStockValue
+  FROM inventories
+  WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id
+  LIMIT 1;
+
+    -- Initialize variables
+    SET @dispatch_qty = NEW.stock_out_qty;
+
+    -- Loop through stock_in entries for the specified product_id
+    SET @done = FALSE;
+
+    WHILE @dispatch_qty > 0 AND NOT @done DO
+        -- Get the next row that meets the conditions
+        SELECT id, remaining_qty
+        INTO @current_id, @current_remaining_qty
+        FROM stock_in_records
+        WHERE product_id = NEW.product_id AND warehouse_id = NEW.warehouse_id
+          AND remaining_qty > 0
+        ORDER BY id ASC
+        LIMIT 1;
+
+        -- Update stock_out_qty and calculate remaining_qty
+        IF @current_remaining_qty <= @dispatch_qty THEN
+            -- Update stock_out_qty and deduct from dispatch_qty
+            UPDATE stock_in_records
+            SET stock_out_qty = stock_out_qty + @current_remaining_qty,
+                remaining_qty = remaining_qty - @current_remaining_qty
+            WHERE id = @current_id;
+
+            SET @dispatch_qty = @dispatch_qty - @current_remaining_qty;
+        ELSE
+            -- Update stock_out_qty and set dispatch_qty to 0 (done)
+            UPDATE stock_in_records
+            SET stock_out_qty = stock_out_qty + @dispatch_qty,
+                remaining_qty = remaining_qty - @dispatch_qty
+            WHERE id = @current_id;
+
+            SET @dispatch_qty = 0;
+            SET @done = TRUE;
+        END IF;
+    END WHILE;
+    
+    -- Insert stock_records for stock in item
+    INSERT INTO stock_records(
+        stock_out_id,
+        product_id,
+        warehouse_id,
+        is_trackable,
+        opening_qty,
+        value_of_opening_stock,
+        stock_out,
+        stock_out_unit_price,
+        closing_qty,
+        value_of_closing_stock,
+        unit,
+        currency,
+        stock_out_by,
+        type,
+        created_at
+      )
+    VALUES (
+        NEW.id,
+        NEW.product_id,
+        NEW.warehouse_id,
+        NEW.is_trackable,
+        openingQty,
+        openingStockValue,
+        NEW.stock_out_qty,
+        NEW.unit_price,
+        openingQty - NEW.stock_out_qty,
+        openingStockValue - (openingStockValue / openingQty * NEW.stock_out_qty),
+        NEW.unit,
+        NEW.currency,
+        NEW.stock_out_by,
+        NEW.status, --'Stock In','Stock Out','Returned','Ordered','Sold','Damaged','Used','Gift','Marketing'
+        NEW.created_at
+    );
+END
+```
+
+
+

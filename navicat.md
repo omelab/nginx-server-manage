@@ -17,7 +17,7 @@ case $version in
         file=~/Library/Preferences/com.navicat.NavicatPremium.plist
         ;;
     "15")
-        file=~/Library/Preferences/com.prect.NavicatPremium15.plist
+        file=~/Library/Preferences/com.prect.NavicatPremium16.plist
         ;;
     *)
         echo "Version '$version' not handled"

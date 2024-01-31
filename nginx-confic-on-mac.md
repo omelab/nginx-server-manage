@@ -136,13 +136,7 @@ $ yarn global add pm2 # install pm2 to keep next app alive forever*
 $ pm2 start npm --name "next" -- start # start next app (npm start script: next start)
 $ pm2 stop next # for stopping app
 ```
-
-# We are done
-Now you have next.js app up and running on nginx reverse proxy with ssl!
-
+ 
 ## Help
-https://kinsta.com/knowledgebase/edit-mac-hosts-file/
-https://kinsta.com/knowledgebase/edit-mac-hosts-file/
-https://gist.github.com/jjsquady/5399d6e1b23f501083a9c262d806e248
-
-brew services restart nginx
+[Edit mac hosts file](https://kinsta.com/knowledgebase/edit-mac-hosts-file/) 
+[help](https://gist.github.com/jjsquady/5399d6e1b23f501083a9c262d806e248)

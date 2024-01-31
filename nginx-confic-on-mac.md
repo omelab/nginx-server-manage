@@ -1,10 +1,5 @@
 # Set Up NGINX on Mac M1
-
-
-
-# How to setup next.js app on nginx with letsencrypt
-> next.js, nginx, reverse-proxy, ssl
-
+ 
 ### 1. Install nginx and letsencrypt
 ```bash
 $ sudo apt-get update

@@ -209,3 +209,40 @@ BEGIN
 
 END;
 ```
+
+
+
+
+## Update Slug with generate slug form name field
+
+```sql
+UPDATE upazilas
+SET slug = LOWER(REGEXP_REPLACE(REGEXP_REPLACE(name, '[^a-z0-9]+', '-', 'g'), '^-+|-+$', '', 'g'))
+WHERE name IS NOT NULL;
+```
+
+
+
+## Update field value by REPLACE string
+
+```sql
+UPDATE your_table_name
+SET your_column_name = REPLACE(your_column_name, 'http://healthms.abubakar.biz/media', 'http://healthms.abubakar.biz/storage')
+WHERE your_column_name LIKE 'http://healthms.abubakar.biz/media%';
+```
+
+
+
+
+## Get Increment sequences
+
+```sql
+SELECT sequence_name
+FROM information_schema.sequences;
+```
+
+## update sequence
+
+```sql
+ALTER SEQUENCE my_sequence INCREMENT BY 10;
+```

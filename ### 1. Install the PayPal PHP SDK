@@ -1,0 +1,2 @@
+### 1. Install the PayPal PHP SDK
+First, add the PayPal PHP SDK to your Laravel project using Composer:

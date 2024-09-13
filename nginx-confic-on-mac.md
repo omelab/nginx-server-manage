@@ -13,7 +13,7 @@ $ sudo ufw allow 'Nginx Full'
 
 ### 2. Edit our default nginx site file
 ```bash
-$ sudo vim /etc/nginx/sites-available/default
+$ sudo vim /opt/homebrew/etc/nginx/sites-available/default
 ```
 ##### Content
 ```
@@ -41,6 +41,8 @@ server {
 ```bash
 $ sudo nginx -t # check syntax errors
 $ sudo systemctl restart nginx
+$ sudo nginx -s stop && sudo nginx
+$ sudo nginx -s reload
 ```
 
 ### 3. Setup letsencrypt

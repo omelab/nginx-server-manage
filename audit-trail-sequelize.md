@@ -20,54 +20,72 @@ Audit trail for create, update, and delete operations in your NestJS application
    import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
 @Table({
-  tableName: 'audit_trail',
-  timestamps: false, // Handle timestamps manually
+  tableName: 'sys_audit_trail',
+  timestamps: false,
 })
-export class AuditTrail extends Model<AuditTrail> {
+export class SysAuditTrail extends Model<SysAuditTrail> {
   @Column({
     type: DataType.INTEGER,
-    autoIncrement: true,
     primaryKey: true,
+    autoIncrement: true,
   })
-  id!: number;
+  sys_audit_trail_id!: number;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  operation!: string; // 'INSERT', 'UPDATE', 'DELETE'
+  operation!: string;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  user_id!: number; // ID of the user who performed the operation
+  user_id!: number;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  table_name!: string; // Name of the table being modified
+  table_name!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  primary_key_column!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  primary_key_id!: string;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
   })
-  old_data?: object; // Previous data before the update or delete
+  old_data?: object;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
   })
-  new_data?: object; // New data after insert or update
+  new_data?: object;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  operation_ip!: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
   })
   timestamp!: Date;
 }
+
 
 ```
 
@@ -138,6 +156,102 @@ export class KpiConfigDetail extends Model<KpiConfigDetail> {
   }
 }
 ```
+
+also we can udpate it
+```ts
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  BeforeCreate,
+  BeforeUpdate,
+  BeforeDelete,
+} from 'sequelize-typescript';
+import { SysAuditTrail } from './sys-audit-trail.model'; // Adjust the import as necessary
+
+@Table({
+  tableName: 'kpi_config_details',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+})
+export class KpiConfigDetail extends Model<KpiConfigDetail> {
+  @Column({
+    type: DataType.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  someField!: string; // Example field
+
+  // Hook for Create operation
+  @BeforeCreate
+  static async logCreate(instance: KpiConfigDetail) {
+    await SysAuditTrail.create({
+      operation: 'INSERT',
+      user_id: getCurrentUserId(), // Implement this to get the current user ID
+      table_name: 'kpi_config_details',
+      primary_key_column: 'id',
+      primary_key_id: instance.id.toString(), // Set after instance is created
+      new_data: instance, // Store the new data
+      operation_ip: getUserIp(), // Implement this to get the user IP
+      timestamp: new Date(),
+    });
+  }
+
+  // Hook for Update operation
+  @BeforeUpdate
+  static async logUpdate(instance: KpiConfigDetail) {
+    // Fetch the old data from the database
+    const oldData = await KpiConfigDetail.findByPk(instance.id);
+    
+    if (oldData) {
+      await SysAuditTrail.create({
+        operation: 'UPDATE',
+        user_id: getCurrentUserId(), // Implement this to get the current user ID
+        table_name: 'kpi_config_details',
+        primary_key_column: 'id',
+        primary_key_id: instance.id.toString(),
+        old_data: oldData, // Store the old data
+        new_data: instance, // Store the new data
+        operation_ip: getUserIp(), // Implement this to get the user IP
+        timestamp: new Date(),
+      });
+    }
+  }
+
+  // Hook for Delete operation
+  @BeforeDelete
+  static async logDelete(instance: KpiConfigDetail) {
+    // Fetch the old data from the database
+    const oldData = await KpiConfigDetail.findByPk(instance.id);
+    
+    if (oldData) {
+      await SysAuditTrail.create({
+        operation: 'DELETE',
+        user_id: getCurrentUserId(), // Implement this to get the current user ID
+        table_name: 'kpi_config_details',
+        primary_key_column: 'id',
+        primary_key_id: instance.id.toString(),
+        old_data: oldData, // Store the old data
+        new_data: null, // No new data since it's a delete
+        operation_ip: getUserIp(), // Implement this to get the user IP
+        timestamp: new Date(),
+      });
+    }
+  }
+}
+
+```
+
+
+
 3. Helper Function to Get Current User:
 You can retrieve the current user from the request or session. You’ll need to implement this function based on how you handle authentication in your application.
 

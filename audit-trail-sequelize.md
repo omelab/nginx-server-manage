@@ -16,7 +16,8 @@ Audit trail for create, update, and delete operations in your NestJS application
 - In each hook, capture the necessary information (e.g., user ID, operation type, timestamp, old and new data) and store it in your audit trail table.
 
 1. Define the Audit Trail Model:
-   ```ts
+   
+  ```ts
    import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
     @Table({
@@ -88,10 +89,9 @@ Audit trail for create, update, and delete operations in your NestJS application
   ```
 
 
-2. Implement Sequelize Hooks in Your Model:
-  For example, in your KpiConfigDetail model:
+2. Implement Sequelize Hooks in Your Model: For example, in your KpiConfigDetail model:
 
-    ```ts
+  ```ts
     import { Table, Column, Model, DataType, BeforeUpdate, BeforeCreate, BeforeDestroy } from 'sequelize-typescript';
     import { AuditTrail } from './audit-trail.model'; // Import your AuditTrail model
     

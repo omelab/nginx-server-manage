@@ -19,72 +19,72 @@ Audit trail for create, update, and delete operations in your NestJS application
    ```ts
    import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
-@Table({
-  tableName: 'sys_audit_trail',
-  timestamps: false,
-})
-export class SysAuditTrail extends Model<SysAuditTrail> {
-  @Column({
-    type: DataType.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  })
-  sys_audit_trail_id!: number;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  operation!: string;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  user_id!: number;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  table_name!: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  primary_key_column!: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  primary_key_id!: string;
-
-  @Column({
-    type: DataType.JSONB,
-    allowNull: true,
-  })
-  old_data?: object;
-
-  @Column({
-    type: DataType.JSONB,
-    allowNull: true,
-  })
-  new_data?: object;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  operation_ip!: string;
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-  })
-  timestamp!: Date;
-}
+    @Table({
+      tableName: 'sys_audit_trail',
+      timestamps: false,
+    })
+    export class SysAuditTrail extends Model<SysAuditTrail> {
+      @Column({
+        type: DataType.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      })
+      sys_audit_trail_id!: number;
+    
+      @Column({
+        type: DataType.STRING,
+        allowNull: false,
+      })
+      operation!: string;
+    
+      @Column({
+        type: DataType.INTEGER,
+        allowNull: false,
+      })
+      user_id!: number;
+    
+      @Column({
+        type: DataType.STRING,
+        allowNull: false,
+      })
+      table_name!: string;
+    
+      @Column({
+        type: DataType.STRING,
+        allowNull: false,
+      })
+      primary_key_column!: string;
+    
+      @Column({
+        type: DataType.STRING,
+        allowNull: false,
+      })
+      primary_key_id!: string;
+    
+      @Column({
+        type: DataType.JSONB,
+        allowNull: true,
+      })
+      old_data?: object;
+    
+      @Column({
+        type: DataType.JSONB,
+        allowNull: true,
+      })
+      new_data?: object;
+    
+      @Column({
+        type: DataType.STRING,
+        allowNull: false,
+      })
+      operation_ip!: string;
+    
+      @Column({
+        type: DataType.DATE,
+        allowNull: false,
+      })
+      timestamp!: Date;
+    }
 
 
 ```

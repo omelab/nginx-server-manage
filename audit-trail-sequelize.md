@@ -248,6 +248,72 @@ export class KpiConfigDetail extends Model<KpiConfigDetail> {
 
 ```
 
+Bulk Update
+
+```ts
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  BeforeCreate,
+  BeforeDelete,
+} from 'sequelize-typescript';
+import { AuditTrail } from './audit-trail.model'; // Adjust the import path accordingly
+
+@Table({
+  tableName: 'bat_kpi_target_by_route',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+})
+export class KpiTargetByRoute extends Model<KpiTargetByRoute> {
+  @Column({
+    type: DataType.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  })
+  kpi_target_id!: number;
+
+  // Other fields...
+
+  // Custom method for bulk update
+  static async bulkUpdateWithAudit(
+    ids: number[], // Array of IDs to be updated
+    updateData: Partial<KpiTargetByRoute>, // New data for update
+    userId: number, // Current user's ID
+  ) {
+    // Fetch previous data for all records being updated
+    const previousDataArray = await KpiTargetByRoute.findAll({
+      where: {
+        kpi_target_id: ids,
+      },
+    });
+
+    // Perform the bulk update
+    await KpiTargetByRoute.update(updateData, {
+      where: {
+        kpi_target_id: ids,
+      },
+    });
+
+    // Create audit trail records for each updated instance
+    for (const previousData of previousDataArray) {
+      await AuditTrail.create({
+        operation: 'UPDATE',
+        user_id: userId,
+        table_name: 'bat_kpi_target_by_route',
+        primary_key_column: 'kpi_target_id',
+        old_data: previousData, // Old data before update
+        new_data: { ...previousData.toJSON(), ...updateData }, // New data after update
+        timestamp: new Date(),
+      });
+    }
+  }
+}
+
+```
+
 
 
 3. Helper Function to Get Current User:

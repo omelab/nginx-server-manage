@@ -84,78 +84,76 @@ Audit trail for create, update, and delete operations in your NestJS application
         allowNull: false,
       })
       timestamp!: Date;
-    }
-
-
-```
+    } 
+  ```
 
 
 2. Implement Sequelize Hooks in Your Model:
   For example, in your KpiConfigDetail model:
 
-```ts
-import { Table, Column, Model, DataType, BeforeUpdate, BeforeCreate, BeforeDestroy } from 'sequelize-typescript';
-import { AuditTrail } from './audit-trail.model'; // Import your AuditTrail model
-
-@Table({
-  tableName: 'kpi_config_details',
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-})
-export class KpiConfigDetail extends Model<KpiConfigDetail> {
-  // Your model columns
-
-  @Column({
-    type: DataType.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-    allowNull: false,
-  })
-  id!: number;
-
-  // Other columns...
-
-  // Hook for Create operation
-  @BeforeCreate
-  static async auditCreate(instance: KpiConfigDetail) {
-    await AuditTrail.create({
-      operation: 'INSERT',
-      user_id: getCurrentUserId(), // Retrieve the current user ID from session or request context
-      table_name: 'kpi_config_details',
-      new_data: instance, // New data after insert
-      timestamp: new Date(),
-    });
-  }
-
-  // Hook for Update operation
-  @BeforeUpdate
-  static async auditUpdate(instance: KpiConfigDetail) {
-    const previousData = await instance.previous(); // Fetch the previous data before update
-
-    await AuditTrail.create({
-      operation: 'UPDATE',
-      user_id: getCurrentUserId(),
-      table_name: 'kpi_config_details',
-      old_data: previousData, // Old data before update
-      new_data: instance, // New data after update
-      timestamp: new Date(),
-    });
-  }
-
-  // Hook for Delete operation
-  @BeforeDestroy
-  static async auditDelete(instance: KpiConfigDetail) {
-    await AuditTrail.create({
-      operation: 'DELETE',
-      user_id: getCurrentUserId(),
-      table_name: 'kpi_config_details',
-      old_data: instance, // Data before deletion
-      timestamp: new Date(),
-    });
-  }
-}
-```
+    ```ts
+    import { Table, Column, Model, DataType, BeforeUpdate, BeforeCreate, BeforeDestroy } from 'sequelize-typescript';
+    import { AuditTrail } from './audit-trail.model'; // Import your AuditTrail model
+    
+    @Table({
+      tableName: 'kpi_config_details',
+      timestamps: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+    })
+    export class KpiConfigDetail extends Model<KpiConfigDetail> {
+      // Your model columns
+    
+      @Column({
+        type: DataType.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false,
+      })
+      id!: number;
+    
+      // Other columns...
+    
+      // Hook for Create operation
+      @BeforeCreate
+      static async auditCreate(instance: KpiConfigDetail) {
+        await AuditTrail.create({
+          operation: 'INSERT',
+          user_id: getCurrentUserId(), // Retrieve the current user ID from session or request context
+          table_name: 'kpi_config_details',
+          new_data: instance, // New data after insert
+          timestamp: new Date(),
+        });
+      }
+    
+      // Hook for Update operation
+      @BeforeUpdate
+      static async auditUpdate(instance: KpiConfigDetail) {
+        const previousData = await instance.previous(); // Fetch the previous data before update
+    
+        await AuditTrail.create({
+          operation: 'UPDATE',
+          user_id: getCurrentUserId(),
+          table_name: 'kpi_config_details',
+          old_data: previousData, // Old data before update
+          new_data: instance, // New data after update
+          timestamp: new Date(),
+        });
+      }
+    
+      // Hook for Delete operation
+      @BeforeDestroy
+      static async auditDelete(instance: KpiConfigDetail) {
+        await AuditTrail.create({
+          operation: 'DELETE',
+          user_id: getCurrentUserId(),
+          table_name: 'kpi_config_details',
+          old_data: instance, // Data before deletion
+          timestamp: new Date(),
+        });
+      }
+    }
+  ```
 
 also we can udpate it
 ```ts

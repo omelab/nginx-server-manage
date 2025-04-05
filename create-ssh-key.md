@@ -186,3 +186,58 @@ http://192.168.1.100
 
 
 
+## Regenerate SSH Key
+
+1. Generate New SSH Key:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+Replace "your_email@example.com" with your actual email address.
+
+2. Specify the File: When prompted, you can press Enter to accept the default file location (/Users/abubakar/.ssh/id_rsa) or specify a different path.
+
+3. Enter a Passphrase: You’ll be prompted to enter a passphrase. You can choose to enter a passphrase for added security or leave it empty.
+
+4. Add the Key to the SSH Agent:
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add --apple-use-keychain ~/.ssh/id_rsa
+ssh-add -l
+```
+
+
+5. Copy the Public Key:
+
+```bash
+pbcopy < ~/.ssh/id_rsa.pub
+```
+
+6. Locate Your Private SSH Key
+
+Use ssh-keygen to Export the Public Key in PEM Format
+You can use ssh-keygen to extract the public key in PEM format:
+
+```bash
+ssh-keygen -f ~/.ssh/id_rsa -e -m PEM > public_key.pem
+```
+
+This command does the following:
+
+```bash
+-f ~/.ssh/id_rsa: Specifies the private key file.
+-e: Export the public key.
+-m PEM: Specifies the output format as PEM. 
+> public_key.pem: Saves the public key to a file named public_key.pem.
+```
+
+
+7. Verify the PEM File
+
+You can view the contents of the generated PEM file using:
+
+```bash
+cat public_key.pem
+```

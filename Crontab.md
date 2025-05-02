@@ -73,3 +73,61 @@ You can find the PHP path using:
 which php
 ```
 
+
+#### Did you schedule your job correctly in `App\Console\Kernel.php`?
+
+In `app/Console/Kernel.php`, you should have something like this:
+
+```php
+protected function schedule(Schedule $schedule)
+{
+    $schedule->job(new \App\Jobs\GenerateMonthlyAttendance)
+             ->monthlyOn(1, '01:00'); // Runs at 1 AM on the 1st day of each month
+}
+```
+You can test it by temporarily changing it to:
+
+```php
+$schedule->job(new \App\Jobs\GenerateMonthlyAttendance)->everyMinute();
+```
+
+Then run: `php artisan schedule:run`
+
+If the job runs, you're all set — just switch it back to monthlyOn(1, '01:00').
+
+
+
+#### Is your job class properly created?
+
+Make sure the job exists at:
+
+```bash
+app/Jobs/GenerateMonthlyAttendance.php
+```
+
+It should implement `ShouldQueue` and use `Dispatchable`.
+
+
+#### Do you see logs?
+
+If the job runs but you want to confirm it executed, you can log something inside `handle()` method:
+
+```bash
+public function handle()
+{
+    \Log::info('GenerateMonthlyAttendance job ran!');
+    // your logic here
+}
+```
+
+
+Then check your log:
+
+
+```bash
+tail -f storage/logs/laravel.log
+```
+
+
+
+

@@ -6,7 +6,7 @@ Below is 100% complete, step-by-step, copy-paste ready guide to install GitLab C
 - ✅ Docker
 - ✅ docker-compose
 - ✅ Nginx reverse proxy
-- ✅ Domain: gitlab.easysofts.com
+- ✅ Domain: gitlab.domain.com
 - ✅ Free HTTPS (Let’s Encrypt)
 - ✅ Gmail SMTP or Local Postfix
 - ✅ Router Port forwarding
@@ -52,7 +52,7 @@ services:
     image: gitlab/gitlab-ce:latest
     container_name: gitlab
     restart: always
-    hostname: gitlab.easysofts.com
+    hostname: gitlab.domain.com
 
     ports:
       - "8080:80"
@@ -66,7 +66,7 @@ services:
 
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'https://gitlab.easysofts.com'
+        external_url 'https://gitlab.domain.com'
         gitlab_rails['gitlab_shell_ssh_port'] = 2224
 
 ```
@@ -103,7 +103,7 @@ sudo cat /srv/gitlab/config/initial_root_password
 #Password: JjoNN8LVRWlJvwiTIkksvmCdo37p8O++J+Ah9hSM8vI=
 
 ```
-Login here: 👉 https://gitlab.easysofts.com
+Login here: 👉 https://gitlab.domain.com
 
 
 *Access the GitLab container*
@@ -141,7 +141,7 @@ exit
 
 4️⃣ Login
 
-Go to: https://gitlab.easysofts.net/users/sign_in 
+Go to: https://gitlab.domain.net/users/sign_in 
 Username: root 
 Password: the one you set above.
 
@@ -173,7 +173,7 @@ Go to your domain DNS panel.
 Example:
 
 ```bash
-gitlab.easysofts.com → 103.xxx.xxx.xxx
+gitlab.domain.com → 103.xxx.xxx.xxx
 
 ```
 
@@ -201,7 +201,7 @@ Paste:
 ```bash
 server {
     listen 80;
-    server_name gitlab.easysofts.com;
+    server_name gitlab.domain.com;
 
     location / {
         proxy_pass http://127.0.0.1:8080;
@@ -234,7 +234,7 @@ sudo apt install certbot python3-certbot-nginx -y
 Run:
 
 ```bash
-sudo certbot --nginx -d gitlab.easysofts.com
+sudo certbot --nginx -d gitlab.domain.com
 
 ```
 
@@ -246,7 +246,7 @@ This will:
 
 Now open the site:
 
-👉 https://gitlab.easysofts.com
+👉 https://gitlab.domain.com
 
 
 ### PART 10 — Home Router Port Forwarding
@@ -332,14 +332,14 @@ sudo apt install postfix -y
 Select → Internet Site
 
 Set hostname:
-`easysofts.com`
+`domain.com`
 
 Then configure GitLab:
 
 ```ruby
 gitlab_rails['smtp_address'] = "127.0.0.1"
 gitlab_rails['smtp_port'] = 25
-gitlab_rails['smtp_domain'] = "easysofts.com"
+gitlab_rails['smtp_domain'] = "domain.com"
 ```
 
 
@@ -348,7 +348,7 @@ gitlab_rails['smtp_domain'] = "easysofts.com"
 
 Open browser:
 
-👉 https://gitlab.easysofts.com
+👉 https://gitlab.domain.com
 
 Login as:
 
@@ -397,7 +397,7 @@ sudo apt install -y gitlab-runner
 # Register runner (replace with values from your GitLab project / Admin > Runners)
 sudo gitlab-runner register \
   --non-interactive \
-  --url "https://gitlab.easysofts.com/" \
+  --url "https://gitlab.domain.com/" \
   --registration-token "PROJECT_OR_INSTANCE_REGISTRATION_TOKEN" \
   --executor "docker" \
   --description "home-lab-docker-runner" \
@@ -468,7 +468,7 @@ deploy:
 Environment variables to set in GitLab CI/CD > Settings > CI/CD > Variables
 
 - SSH_PRIVATE_KEY — private key for deploy user (id_rsa)
-- DEPLOY_HOST — gitlab.easysofts.com or server IP
+- DEPLOY_HOST — gitlab.domain.com or server IP
 - DEPLOY_USER — e.g., deploy
 - DEPLOY_PATH — e.g., /var/www/next-app
 
@@ -734,7 +734,7 @@ services:
     restart: unless-stopped
     environment:
       # Use your GitLab URL and registration token (or register interactively)
-      - CI_SERVER_URL=https://gitlab.easysofts.com/
+      - CI_SERVER_URL=https://gitlab.domain.com/
       # if you pre-register a runner and use token, put it here (optional)
       # - REGISTRATION_TOKEN=REPLACE_WITH_TOKEN
     volumes:
@@ -982,7 +982,7 @@ deploy_production:
 
  ```bash
  server {
-    server_name server_name gitlab.easysofts.net;
+    server_name server_name gitlab.domain.net;
     root /var/www/html;
     index index.html index.htm;
 
@@ -991,20 +991,20 @@ deploy_production:
     }
 
     listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/gitlab.easysofts.net/fullchain.pem; # manage>
-    ssl_certificate_key /etc/letsencrypt/live/gitlab.easysofts.net/privkey.pem; # mana>
+    ssl_certificate /etc/letsencrypt/live/gitlab.domain.net/fullchain.pem; # manage>
+    ssl_certificate_key /etc/letsencrypt/live/gitlab.domain.net/privkey.pem; # mana>
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
 }
 server {
-    if ($host = gitlab.easysofts.net) {
+    if ($host = gitlab.domain.net) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
 
     listen 80;
-    server_name server_name gitlab.easysofts.net;
+    server_name server_name gitlab.domain.net;
     return 404; # managed by Certbot
 
 
@@ -1015,7 +1015,7 @@ server {
 Steps to apply this config and Save the file:
 
 ```bash
-sudo nano /etc/nginx/sites-available/gitlab.easysofts.net.conf
+sudo nano /etc/nginx/sites-available/gitlab.domain.net.conf
 
 ```
 
@@ -1024,7 +1024,7 @@ sudo nano /etc/nginx/sites-available/gitlab.easysofts.net.conf
 # Redirect all HTTP traffic to HTTPS
 server {
     listen 80;
-    server_name gitlab.easysofts.net;
+    server_name gitlab.domain.net;
 
     # Redirect to HTTPS
     return 301 https://$host$request_uri;
@@ -1038,11 +1038,11 @@ map $http_upgrade $connection_upgrade {
 
 server {
     listen 443 ssl http2;
-    server_name gitlab.easysofts.net;
+    server_name gitlab.domain.net;
 
     # SSL configuration (Certbot)
-    ssl_certificate /etc/letsencrypt/live/gitlab.easysofts.net/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/gitlab.easysofts.net/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/gitlab.domain.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gitlab.domain.net/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -1067,7 +1067,7 @@ server {
 Enable it:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/gitlab.easysofts.net.conf /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/gitlab.domain.net.conf /etc/nginx/sites-enabled/
 ```
 
 Test Nginx config:
@@ -1106,13 +1106,13 @@ This file will be included in each site instead of repeating `options-ssl-nginx.
 
 ### Step 2: GitLab vhost
 
-Create `/etc/nginx/sites-available/gitlab.easysofts.net.conf:`
+Create `/etc/nginx/sites-available/gitlab.domain.net.conf:`
 
 ```bash
 # Redirect HTTP to HTTPS
 server {
     listen 80;
-    server_name gitlab.easysofts.net;
+    server_name gitlab.domain.net;
     return 301 https://$host$request_uri;
 }
 
@@ -1124,10 +1124,10 @@ map $http_upgrade $connection_upgrade {
 
 server {
     listen 443 ssl http2;
-    server_name gitlab.easysofts.net;
+    server_name gitlab.domain.net;
 
-    ssl_certificate /etc/letsencrypt/live/gitlab.easysofts.net/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/gitlab.easysofts.net/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/gitlab.domain.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gitlab.domain.net/privkey.pem;
     include /etc/nginx/snippets/ssl-params.conf;
 
     location / {
@@ -1148,21 +1148,21 @@ server {
 
 ### Step 3: POS vhost example
 
-`/etc/nginx/sites-available/pos.easysofts.net.conf`
+`/etc/nginx/sites-available/pos.domain.net.conf`
 
 ```bash
 server {
     listen 80;
-    server_name pos.easysofts.net;
+    server_name pos.domain.net;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name pos.easysofts.net;
+    server_name pos.domain.net;
 
-    ssl_certificate /etc/letsencrypt/live/pos.easysofts.net/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/pos.easysofts.net/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/pos.domain.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/pos.domain.net/privkey.pem;
     include /etc/nginx/snippets/ssl-params.conf;
 
     location / {
@@ -1178,22 +1178,22 @@ server {
 
 ### Step 4: S3Admin vhost example
 
-`/etc/nginx/sites-available/s3admin.easysofts.net.conf:`
+`/etc/nginx/sites-available/s3admin.domain.net.conf:`
 
 
 ```bash
 server {
     listen 80;
-    server_name s3admin.easysofts.net;
+    server_name s3admin.domain.net;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name s3admin.easysofts.net;
+    server_name s3admin.domain.net;
 
-    ssl_certificate /etc/letsencrypt/live/s3admin.easysofts.net/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/s3admin.easysofts.net/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/s3admin.domain.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/s3admin.domain.net/privkey.pem;
     include /etc/nginx/snippets/ssl-params.conf;
 
     location / {
@@ -1209,9 +1209,9 @@ server {
 ### Step 5: Enable sites
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/gitlab.easysofts.net.conf /etc/nginx/sites-enabled/
-sudo ln -s /etc/nginx/sites-available/pos.easysofts.net.conf /etc/nginx/sites-enabled/
-sudo ln -s /etc/nginx/sites-available/s3admin.easysofts.net.conf /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/gitlab.domain.net.conf /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/pos.domain.net.conf /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/s3admin.domain.net.conf /etc/nginx/sites-enabled/
 
 ```
 

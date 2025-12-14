@@ -3,9 +3,9 @@
 ```bash
 server {
     listen 80;
-    server_name watanabe.test;
+    server_name test.test;
 
-    root  "/Users/abubakar/Workspace/watanabe/public";
+    root  "/Users/test/Workspace/test/public";
     index index.php index.html index.htm;
 
     location / {
@@ -41,8 +41,8 @@ server {
 ```
 server {
     listen 80;
-    server_name 68.183.234.185;
-    root /var/www/millennium/public;
+    server_name 13.32.332.33;
+    root /var/www/test/public;
     index index.php index.html;
 
     location / {
@@ -66,17 +66,17 @@ server {
 ##  server config for api Node project
 ```bash
 server {
-    server_name vmsapi.jetliatl.com;
+    server_name test.com;
 
     # Serve static uploads directly
     location /uploads/ {
-        alias /usr/share/nginx/jetliatl/vms_api/public/uploads/;
+        alias /uploads/;
         autoindex off; # remove if you want directory listing
     }
 
     # Proxy API and other requests
     location / {
-        proxy_pass http://localhost:3011;
+        proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -85,19 +85,19 @@ server {
     }
 
     listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/vmsapi.jetliatl.com/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/vmsapi.jetliatl.com/privkey.pem; # managed by Certbot
+    ssl_certificate /etc/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
 
 server {
-    if ($host = vmsapi.jetliatl.com) {
+    if ($host = test.com) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
     listen 80;
-    server_name vmsapi.jetliatl.com;
+    server_name test.com;
     return 404; # managed by Certbot
 }
 ```

@@ -21,9 +21,23 @@ usermod -aG sudo newuser
 
 On your local machine:
 
-```bash
 
-ssh-keygen -t ed25519 -C "newuser@172.168.100.1"
+```bsh
+#check is already exist
+
+ls -l ~/.ssh
+
+```
+You should see something like:
+
+```bash
+id_ed25519
+id_ed25519.pub
+```
+
+
+```bash
+ssh-keygen -t ed25519 -a 100 -f ~/.ssh/new_key -C "main@host.com"
 
 ```
 Press Enter to accept default paths, optionally set a passphrase.
@@ -33,7 +47,7 @@ Copy the public key to your droplet:
 
 ```bash
 
-cat ~/.ssh/id_ed25519.pub
+cat ~/.ssh/new_key.pub
 
 ```
 
@@ -48,7 +62,7 @@ chmod 600 ~/.ssh/authorized_keys
 ```
 
 
-Log in using Termux:
+Log in :
 
 ```bash
 ssh newuser@172.168.100.1
@@ -586,3 +600,90 @@ chown postgres:postgres /tmp/vms_restore.sql
 # Restore from /tmp
 sudo -u postgres psql -d vms_db -f /tmp/vms_restore.sql
 ```
+
+
+
+
+## Clear system cache (safe)
+
+This frees RAM used by cache.
+
+```bash
+sudo sync; sudo sysctl -w vm.drop_caches=3
+```
+Check memory before/after:
+
+```bash
+free -h
+```
+
+_Clean APT cache (very safe)_
+
+Removes downloaded package files.
+
+```bash
+sudo apt clean
+sudo apt autoclean
+sudo apt autoremove --purge -y
+```
+
+_Clear user cache_
+
+Clear user cache
+
+```bash
+rm -rf ~/.cache/*
+```
+(Optional: log out & log back in for full effect)
+
+
+_Clear system logs (safe)_
+
+Reduce large log files.
+
+```bash
+sudo journalctl --vacuum-time=7d
+```
+(keeps only last 7 days)
+
+To check log size:
+
+```bash
+journalctl --disk-usage
+```
+
+
+_Find unnecessary running processes_
+
+See what’s using CPU/RAM:`top`
+
+
+_Remove unused packages & old kernels_
+
+```bash
+sudo apt autoremove --purge
+```
+Check installed kernels:
+
+```bash
+dpkg --list | grep linux-image
+```
+
+_Check disk usage_
+
+```bash
+df -h
+du -sh /var/*
+```
+
+_Extra security (important)_
+If you ever suspect crypto miners or malware (you mentioned this before), run:
+
+```bash
+ps aux | egrep -i 'xmrig|minerd|crypto'
+```
+
+
+
+
+
